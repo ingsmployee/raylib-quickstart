@@ -37,12 +37,22 @@ int main ()
 {
 	ChangeDirectory("resources"); //make sure these glorpaglogangaigrangers load properly ykyk
 
-	MemoryManager grongle = MemoryManager();
-	grongle.exposeMemory();
-	Image wabbit = grongle.grabImage("wabbit_alpha.png");
-	grongle.exposeMemory();
+	InitWindow(500, 500, "grano");
 
-	Image wabbitbutagain = grongle.grabImage("wabbit_alpha.png");
-	grongle.exposeMemory();	
+	MemoryManager grongle = MemoryManager();
+	grongle.showRAM();
+	Image wabbit = LoadImage("wabbit_alpha.png");
+	grongle.registerResource(&wabbit, IMAGE, RAM_TYPE);
+	grongle.showRAM();	
+	Texture2D wabbit_texture = LoadTextureFromImage(wabbit);
+	grongle.registerResource(&wabbit_texture, TEXTURE, VRAM_TYPE);
+
+	SetTargetFPS(30);
+	while (!WindowShouldClose()) {
+		BeginDrawing();
+		DrawTexture(wabbit_texture, 50, 50, WHITE);
+		EndDrawing();
+	}
+	CloseWindow();
 	return 0;
 }
