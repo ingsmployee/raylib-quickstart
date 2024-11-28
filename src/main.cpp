@@ -26,19 +26,23 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 
 */
 
-// I, @ingsoc on Discord and https://steamcommunity.com/id/fdslajkfklsadfjkslfjsd/ (Robot Employee\#1) on Steam, have modified this file beyond the original source.
+// I, @ingsoc on Discord and https://steamcommunity.com/id/fdslajkfklsadfjkslfjsd/ (Robot Employee\#1) on Steam, have modified this file/project/repo beyond the original source.
 
 
 #include "raylib.h"
-
-#include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 
 #include "overall.h"
 
 int main ()
 {
-	MemoryManager grongle = MemoryManager();
-	grongle.grabImage("wabbit_alpha.png");
+	ChangeDirectory("resources"); //make sure these glorpaglogangaigrangers load properly ykyk
 
+	MemoryManager grongle = MemoryManager();
+	grongle.exposeMemory();
+	Image wabbit = grongle.grabImage("wabbit_alpha.png");
+	grongle.exposeMemory();
+
+	Image wabbitbutagain = grongle.grabImage("wabbit_alpha.png");
+	grongle.exposeMemory();	
 	return 0;
 }

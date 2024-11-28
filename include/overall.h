@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <vector>
-#include "resource_dir.h"
 
 class MemoryManager {
 private:
@@ -26,33 +25,40 @@ public:
     }
     void releaseImage(Image r) {
         UnloadImage(r);
-
+        ram_resources.erase(ram_resources.begin() + searchPtrVec(ram_resources, &r));
     }
 
-
+    void exposeMemory() {
+        std::cout << "RAM: {";
+        for (void* r: ram_resources) {
+            std::cout << r << ", ";
+        }
+        std::cout << "}" <<std::endl;
+    }
 };
 
-
-class Game:MemoryManager {
+class Level {
 private:
+    MemoryManager mem = MemoryManager();
+public:
+    int gragagono;
+    void requestExit() {
+        return;
+    }
+};
+
+class Game {
+private:
+    MemoryManager mem = MemoryManager();
     bool shouldQuit;
     Level currentLevel;
 
 public:
     void requestQuit() {
-
+        shouldQuit = true;
     }
 
     Level switchToLevel(Level target) {
-        
-    }
-};
-
-class Level: MemoryManager {
-
-
-public:
-    void requestExit() {
-        return;
+        return target;
     }
 };
