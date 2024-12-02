@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 
+//#include "levels.h"
+
 enum mem_type {
     RAM_TYPE,
     VRAM_TYPE,
@@ -48,6 +50,12 @@ enum res_type { //organized for clarity. doesn't really matter
 }; //well that was a lot
 
 class MemoryManager {
+// this class serves to abstract a lot of the loading and unloading methods,
+//      essentially working as a sort-of dictionary to keep track of resources at a local level,
+//      allowing for complicated screens/levels to be unloaded completely and safely
+// since the vectors only hold enums and pointers, they probably won't take up nearly
+//      as much memory as the resources themselves
+
 private:
     std::vector<void *> ram_resources; //this is probably a shit idea
     std::vector<void *> vram_resources;
@@ -78,6 +86,37 @@ private:
         }
     }
 
+    // doesn't touch the vectors. erases a resource using raylib stuff
+    void unloadResOfType(void* r, res_type resType) {
+        switch(resType) {
+            case IMAGE:
+                UnloadImage(*(Image*)r);
+            break;
+            case TEXTURE:
+                UnloadTexture(*(Texture*)r);
+            break;
+        }
+    }
+
+    // takes an index then the memory vectors directly
+    // erases that entry in the vectors and with raylib erase
+    void unloadResAtIndex(unsigned int index, std::vector<void*>& mem, std::vector<res_type>& memType) {
+        if (mem.size() < 1) {
+            return;
+        }
+
+        mem.erase(mem.begin() + index); //remove from the mem vectors
+        memType.erase(memType.begin() + index); 
+
+        unloadResOfType(mem.at(index), memType.at(index)); //use raylib function to actually remove it
+    }
+
+    void unloadMemVec(std::vector<void*> &mem, std::vector<res_type> &memType) {
+        for(int i = 0; i < mem.size(); i++) {
+            unloadResAtIndex(i, mem, memType);
+        }
+    }
+
 public:
     void showRAM() {
         int i = 0;
@@ -101,7 +140,7 @@ public:
         std::cout << "}" << std::endl;
     }
 
-    void registerResource(void* res, res_type resType) { // TODO: fix this lmao
+    void registerResource(void* res, res_type resType) { 
         if (resType > RAM_START && resType < VRAM_START) {
             ram_resources.push_back(res);
             ram_restypes.push_back(resType);
@@ -111,10 +150,15 @@ public:
         }
     }
 
+    // identifies the type of memory to remove from, then removes from that memory
+    // different to unloadResOfType() because it also finds the memory type and erases accordingly
     void unloadResource(void* r, res_type resType) {
-        const mem_type memType = getMemType(resType);
+
+
+        // identify what type of memory
         std::vector<void*>* resVectorPtr;
         std::vector<res_type>* resTypeVectorPtr;
+        const mem_type memType = getMemType(resType);
         switch(memType) {
             case RAM_TYPE:
                 resVectorPtr = &ram_resources;
@@ -130,44 +174,53 @@ public:
             return;
         }
 
+        // clear that kind of memory
+        // TODO: make the algorithm more efficient by searching res_type first, then searching through said res_type. could just be a simple &&
         int index = searchPtrVec(*resVectorPtr, &r);
-        (*resVectorPtr).erase((*resVectorPtr).begin() + index);
-        (*resTypeVectorPtr).erase((*resTypeVectorPtr).begin() + index);
-        switch(resType) {
-            case IMAGE:
-                UnloadImage(*(Image*)r);
+
+        unloadResAtIndex(index, *resVectorPtr, *resTypeVectorPtr);
+    }
+    
+    void clearAll() {
+        clearMemory(RAM_TYPE);
+        clearMemory(VRAM_TYPE);
+    }
+
+
+
+    void clearMemory(mem_type memType) {
+        switch (memType) {
+            case RAM_TYPE:
+                unloadMemVec(ram_resources, ram_restypes);
             break;
-            case TEXTURE:
-                UnloadTexture(*(Texture2D*)r);
+            case VRAM_TYPE:
+                unloadMemVec(vram_resources, vram_restypes);
             break;
         }
     }
+
+};
+
+class Object2D {
+private:
+    Vector2 position;
+    int layer;
+public:
+
+    Vector2 getPosition() {
+        return position;
+    }
     
-
-};
-
-class Level {
-private:
-    MemoryManager mem = MemoryManager();
-public:
-    int gragagono;
-    void requestExit() {
-        return;
-    }
-};
-
-class Game {
-private:
-    MemoryManager mem = MemoryManager();
-    bool shouldQuit;
-    Level currentLevel;
-
-public:
-    void requestQuit() {
-        shouldQuit = true;
+    void setPosition(Vector2 newPosition) {
+        position = newPosition;
     }
 
-    Level switchToLevel(Level target) {
-        return target;
+    int getLayer() {
+        return layer;
     }
+    
+    void setLayer(int newLayer) {
+        layer = newLayer;
+    } 
+        
 };

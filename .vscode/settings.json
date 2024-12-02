@@ -103,6 +103,9 @@
 		"typeindex": "cpp",
 		"valarray": "cpp",
 		"variant": "cpp",
-		"*.m": "cpp"
+		"*.m": "cpp",
+		"queue": "cpp",
+		"ranges": "cpp",
+		"stack": "cpp"
 	}
 }

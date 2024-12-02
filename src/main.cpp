@@ -32,6 +32,7 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 #include "raylib.h"
 
 #include "overall.h"
+#include "game_stuff.h"
 
 int main ()
 {
@@ -39,29 +40,21 @@ int main ()
 
 	InitWindow(500, 500, "grano");
 
-	MemoryManager grongle = MemoryManager();
-	grongle.showRAM();
+	Game game;
 
-	Image wabbit = LoadImage("wabbit_alpha.png");
-	grongle.registerResource(&wabbit, IMAGE);
-	grongle.showRAM();
-
-	Texture2D wabbit_texture = LoadTextureFromImage(wabbit);
-	grongle.registerResource(&wabbit_texture, TEXTURE);
-	grongle.unloadResource(&wabbit, IMAGE);
-	grongle.showRAM();
-	grongle.showVRAM();
+	std::cout << typeid(Game).name();
+	std::cout << typeid(game).name();
 
 	SetTargetFPS(30);
 	while (!WindowShouldClose()) {
 		BeginDrawing();
-		DrawTexture(wabbit_texture, 50, 50, WHITE);
+		ClearBackground(BLACK);
+
+		game.draw();
+
 		EndDrawing();
 
-		if (IsKeyDown(KEY_A)) {
-			grongle.unloadResource(&wabbit_texture, TEXTURE);
-			grongle.showVRAM();
-		}
+		
 
 		
 	}
