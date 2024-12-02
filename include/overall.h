@@ -5,10 +5,12 @@
 
 enum mem_type {
     RAM_TYPE,
-    VRAM_TYPE
+    VRAM_TYPE,
+    ANY_TYPE
 };
 enum res_type { //organized for clarity. doesn't really matter
     //ram
+    RAM_START,
     IMAGE,
     NPATCHINFO, //ram?
     GLYPH_INFO, //font info
@@ -29,6 +31,7 @@ enum res_type { //organized for clarity. doesn't really matter
 
 
     //vram
+    VRAM_START,
     TEXTURE,
     RENDER_TEXTURE,
     SHADER,
@@ -37,6 +40,7 @@ enum res_type { //organized for clarity. doesn't really matter
     MODEL_ANIMATION_ARRAY,
 
     //either
+    ANY_START,
     MODEL,
     MESH,
     MATERIAL,
@@ -60,6 +64,20 @@ private:
         return 0;
     }
 
+    mem_type getMemType(res_type r) {
+        if (r > VRAM_START) {
+            if (r > ANY_START) {
+                return ANY_TYPE;
+            }
+            else {
+                return VRAM_TYPE;
+            }
+        }
+        else {
+            return RAM_TYPE;
+        }
+    }
+
 public:
     void showRAM() {
         int i = 0;
@@ -72,20 +90,49 @@ public:
         std::cout << "}" << std::endl;
     }
 
-    void registerResource(void* res, res_type resType, mem_type memType) { // TODO: fix this lmao
-        if (memType = RAM_TYPE) {
+    void showVRAM() {
+        int i = 0;
+        std::cout << "VRAM (" << vram_resources.size() << " entries): {";
+        for (void* r: vram_resources) {
+            std::cout << "{(" << vram_restypes.at(i) << ") " << r << "} , ";
+
+            i++;
+        }
+        std::cout << "}" << std::endl;
+    }
+
+    void registerResource(void* res, res_type resType) { // TODO: fix this lmao
+        if (resType > RAM_START && resType < VRAM_START) {
             ram_resources.push_back(res);
             ram_restypes.push_back(resType);
-        } else {
+        } else if (resType > VRAM_START && resType < ANY_START) {
             vram_resources.push_back(&res);
             vram_restypes.push_back(resType);
         }
     }
 
     void unloadResource(void* r, res_type resType) {
-        int index = searchPtrVec(ram_resources, &r);
-        ram_resources.erase(ram_resources.begin() + index);
-        ram_restypes.erase(ram_restypes.begin() + index);
+        const mem_type memType = getMemType(resType);
+        std::vector<void*>* resVectorPtr;
+        std::vector<res_type>* resTypeVectorPtr;
+        switch(memType) {
+            case RAM_TYPE:
+                resVectorPtr = &ram_resources;
+                resTypeVectorPtr = &ram_restypes;
+                break;
+            case VRAM_TYPE:
+                resVectorPtr = &vram_resources;
+                resTypeVectorPtr = &vram_restypes;
+                break;
+        }
+
+        if ((*resVectorPtr).size() < 1) {
+            return;
+        }
+
+        int index = searchPtrVec(*resVectorPtr, &r);
+        (*resVectorPtr).erase((*resVectorPtr).begin() + index);
+        (*resTypeVectorPtr).erase((*resTypeVectorPtr).begin() + index);
         switch(resType) {
             case IMAGE:
                 UnloadImage(*(Image*)r);

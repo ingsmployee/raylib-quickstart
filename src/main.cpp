@@ -41,17 +41,29 @@ int main ()
 
 	MemoryManager grongle = MemoryManager();
 	grongle.showRAM();
+
 	Image wabbit = LoadImage("wabbit_alpha.png");
-	grongle.registerResource(&wabbit, IMAGE, RAM_TYPE);
-	grongle.showRAM();	
+	grongle.registerResource(&wabbit, IMAGE);
+	grongle.showRAM();
+
 	Texture2D wabbit_texture = LoadTextureFromImage(wabbit);
-	grongle.registerResource(&wabbit_texture, TEXTURE, VRAM_TYPE);
+	grongle.registerResource(&wabbit_texture, TEXTURE);
+	grongle.unloadResource(&wabbit, IMAGE);
+	grongle.showRAM();
+	grongle.showVRAM();
 
 	SetTargetFPS(30);
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 		DrawTexture(wabbit_texture, 50, 50, WHITE);
 		EndDrawing();
+
+		if (IsKeyDown(KEY_A)) {
+			grongle.unloadResource(&wabbit_texture, TEXTURE);
+			grongle.showVRAM();
+		}
+
+		
 	}
 	CloseWindow();
 	return 0;
