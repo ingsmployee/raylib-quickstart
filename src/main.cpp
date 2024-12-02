@@ -45,7 +45,7 @@ int main ()
 	std::cout << typeid(Game).name();
 	std::cout << typeid(game).name();
 
-	SetTargetFPS(30);
+	SetTargetFPS(30); //TODO: make function thingy that tells the game to update outside of frame stuff
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 		ClearBackground(BLACK);
@@ -55,7 +55,6 @@ int main ()
 		EndDrawing();
 
 		
-
 		
 	}
 	CloseWindow();
