@@ -45,14 +45,23 @@ int main ()
 	Game game;
 
 	ResourceManager rema;
+	
 
 
 
 
 		//Texture2DResource* pTexture = (Texture2DResource*)rema.push(new Texture2DResource("wabbit_alpha.png"));
 		//Image i = LoadImage("wabbit_alpha.png");
-		Texture2DResource* pTexture = remaPush<Texture2DResource> (rema, "wabbit_alpha.png");
+		//Texture2DResource* pTexture = remaPush<Texture2DResource> (rema, "wabbit_alpha.png");
+
+		//well this seems pretty straightforward to me. probably not the most performant but who cares
+		Texture2DResource* pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
+
+		
 		std::cout << pTexture << std::endl;
+
+		//trying to get this syntax to work using overloaded or newly defined operators
+		//rema load new Texture2DResource("wabbit_alpha.png");
 		
 
 
@@ -68,10 +77,10 @@ int main ()
 		EndDrawing();
 
 		if (IsKeyDown(KEY_G)) {
-			
+			pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
 		}
 		if (IsKeyDown(KEY_H)) {
-			rema.clear();
+			rema.clearAll();
 		}
 		
 	}

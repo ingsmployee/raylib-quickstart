@@ -77,52 +77,6 @@ public:
     }
 };
 
-class ResourceManager {
-private:
-    //this is designed to be instantiated per-level, maybe idk
-    std::vector<Resource*> resources;
-
-    int findResource(Resource* item, std::vector<Resource*> resources) {
-    for(unsigned int i=0; i < resources.size(); i++) {
-        if (item == resources.at(i)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-public:
-    /*Resource* push(Resource* res) {
-        resources.push_back(res);
-        return res;
-    }*/
-    void removeRes(Resource* res) {
-        int index = findResource(res, resources);
-        if (index > -1) {
-            resources.erase(resources.begin() + index);
-        }
-        else {
-            clog(D_RESOURCE, "Could not find resource in ResourceManager. Are you checking the right one?"); //this is asswater
-        }
-    }
-
-    template <typename T> T push(T res) {
-        resources.push_back(res);
-        return res;
-    }
-
-    void clear() {
-        for(Resource* res : resources) {
-            delete res; //hoping this invokes the destructor. probably does. hopefully
-        }
-        resources.clear();
-    }
-
-
-};
-
-
-
 class ImageResource: public Resource {
 private:
     Image* pointer;
@@ -199,16 +153,66 @@ public:
 };
 
 
+class ResourceManager {
+private:
+    //this is designed to be instantiated per-level, maybe idk
+    std::vector<Resource*> resources;
+    
+public:
+    int findResource(Resource* item) {
+        for(unsigned int i=0; i < resources.size(); i++) {
+            if (item == resources.at(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    void removeRes(Resource* res) {
+        int index = findResource(res);
+        if (index > -1) {
+            resources.erase(resources.begin() + index);
+        }
+        else {
+            clog(D_RESOURCE, "Could not find resource in ResourceManager. Are you checking the right one?"); //this is asswater
+        }
+    }
 
-template <class T>
-T* remaPush(ResourceManager& resman, const char* arg) {
-	return (T*)resman.push(new T((char*)arg));
-}
+    template <class T> 
+    T* pload(const char* arg) {
+        T* item = new T((char*)arg);
+        resources.push_back(item);
+        return item;
+        
+    }
 
-template <class T, typename Y>
-T* remaPush(ResourceManager& resman, Y arg) {
-	return (T*)resman.push(new T(arg));
-}
+    template<class T, typename Y>
+    T* pload(Y arg) {
+        T* item = new T(arg);
+        resources.push_back(item);
+        return item;
+    }
+
+    void push(Resource* res) {
+        resources.push_back(res);
+    }
+
+    // uses delete on every pointer in resources
+    void clearAll() {
+        for(Resource* res : resources) {
+            delete res; //hoping this invokes the destructor. probably does. hopefully
+        }
+        resources.clear();
+    }
+
+
+
+
+};
+
+
+
+
+
 
 
 
