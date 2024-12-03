@@ -6,10 +6,15 @@
 #include <ctime>
 
 enum debug_mode {
-    D_NONE,
-    D_LOW,
+    D_MINIMAL,
+    D_EVENTS,
+    D_MID,
+    D_EXTRA,
+    D_RESOURCE,
     D_VERBOSE
 };
+
+debug_mode D_MODE = D_RESOURCE;
 
 enum mem_type {
     RAM_TYPE,
@@ -51,31 +56,74 @@ enum res_type { //organized for clarity. doesn't really matter
     ANY_START,
     MODEL,
     MESH,
-    MATERIAL,
+    MATERIAL
 
 }; //well that was a lot
 
 // time stuff in this function inspired by https://stackoverflow.com/a/27856440
-void log(debug_mode mode, std::string input) { 
+void clog(debug_mode mode, std::string input) { 
+    if(mode < D_MODE) {return;}
     std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::cout << "[" << std::ctime(&time) << "] (" << mode << ") " << input << std::endl;
 }
 
-
-class ObjMemoryManager {
-
-
-
-
-};
-
-class Resource {
-public:
+class Resource { // the beginning of it all muahahaha
+protected:
     res_type type;
     char* path;
+public:
+    res_type getType() {
+        return type;
+    }
 };
 
-class ImageResource: Resource {
+class ResourceManager {
+private:
+    //this is designed to be instantiated per-level, maybe idk
+    std::vector<Resource*> resources;
+
+    int findResource(Resource* item, std::vector<Resource*> resources) {
+    for(unsigned int i=0; i < resources.size(); i++) {
+        if (item == resources.at(i)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+public:
+    /*Resource* push(Resource* res) {
+        resources.push_back(res);
+        return res;
+    }*/
+    void removeRes(Resource* res) {
+        int index = findResource(res, resources);
+        if (index > -1) {
+            resources.erase(resources.begin() + index);
+        }
+        else {
+            clog(D_RESOURCE, "Could not find resource in ResourceManager. Are you checking the right one?"); //this is asswater
+        }
+    }
+
+    template <typename T> T push(T res) {
+        resources.push_back(res);
+        return res;
+    }
+
+    void clear() {
+        for(Resource* res : resources) {
+            delete res; //hoping this invokes the destructor. probably does. hopefully
+        }
+        resources.clear();
+    }
+
+
+};
+
+
+
+class ImageResource: public Resource {
 private:
     Image* pointer;
 public:
@@ -83,6 +131,7 @@ public:
     ImageResource(char* respath) {
         path = respath;
         type = IMAGE;
+        load();
     }
 
     Image* load() {
@@ -93,7 +142,6 @@ public:
 
     void unload() {
         UnloadImage(image);
-        delete pointer;
     }
 
 
@@ -104,25 +152,28 @@ public:
 
 };
 
-class Texture2DResource: Resource {
+class Texture2DResource: public Resource {
 private:
     Texture2D* t_pointer;
     bool imgPath = false;
     Image* i_pointer;
 public:
     Texture2D texture;
-    //overload the constructor
-    //respath will load the image then the texture
-    //fromImage will just load the image argument
+    //Overloaded constructor
+    //the first definition using char* will first load an image, then load a texture from that image
+    //the second definition will load a texture from a given Image object
+    //the second mode of operation requires the image to still be around when loading and unloading
     Texture2DResource(char* respath) {
         path = respath;
         type = TEXTURE2D;
         imgPath = true;
+        load();
     }
 
     Texture2DResource(Image fromImage) {
         type = TEXTURE2D;
         i_pointer = &fromImage;
+        load();
     }
 
     Texture2D* load() {
@@ -140,9 +191,6 @@ public:
 
     void unload() {
         UnloadTexture(texture);
-        delete t_pointer;
-        // don't delete i_pointer
-        // because the image is not actually stored in this
     }
 
     ~Texture2DResource() {
@@ -152,11 +200,21 @@ public:
 
 
 
+template <class T>
+T* remaPush(ResourceManager& resman, const char* arg) {
+	return (T*)resman.push(new T((char*)arg));
+}
+
+template <class T, typename Y>
+T* remaPush(ResourceManager& resman, Y arg) {
+	return (T*)resman.push(new T(arg));
+}
 
 
 
 
-// OLD VERSION USING CRAPPY VOID*
+
+// OLD MEMORY MANAGER USING CRAPPY VOID* INSTEAD OF BASED RESOURCE*
 class VoidPtrMemoryManager {
 // this class serves to abstract a lot of the loading and unloading methods,
 //      essentially working as a sort-of dictionary to keep track of resources at a local level,
