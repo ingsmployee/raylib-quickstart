@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <vector>
-#include "resource_stuff.h"
+#include "resource_manager.h"
 #include "game_stuff.h"
 
 //#include "levels.h"

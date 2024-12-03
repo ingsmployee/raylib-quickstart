@@ -1,163 +1,22 @@
 #pragma once
-#include "overall.h"
-#include <vector>
+
+#include "debug_stuff.h"
+#include <iostream>
 #include "raylib.h"
-#include <chrono>
-#include <ctime>
+#include <vector>
 
-enum debug_mode {
-    D_MINIMAL,
-    D_EVENTS,
-    D_MID,
-    D_EXTRA,
-    D_RESOURCE,
-    D_VERBOSE
-};
-
-debug_mode D_MODE = D_RESOURCE;
-
-enum mem_type {
-    RAM_TYPE,
-    VRAM_TYPE,
-    ANY_TYPE
-};
-enum res_type { //organized for clarity. doesn't really matter
-    //ram
-    RAM_START,
-    IMAGE,
-    NPATCHINFO, //ram?
-    GLYPH_INFO, //font info
-    RANDOM_SEQUENCE,
-    FILE_DATA,
-    FILE_TEXT,
-    DIR_FILES,
-    DROPPED_FILES,
-    AUTOAMTION_EVENT_LIST,
-    IMAGE_COLORS,
-    IMAGE_PALETTE,
-    WAVE,
-    SOUND,
-    SOUND_ALIAS,
-    WAVE_SAMPLES,
-    MUSIC_STREAM,
-    AUDIO_STREAM,
+#include "resource_base.h"
 
 
-    //vram
-    VRAM_START,
-    TEXTURE2D,
-    RENDER_TEXTURE,
-    SHADER,
-    FONT,
-    MODEL_ANIMATION, //gpu???
-    MODEL_ANIMATION_ARRAY,
-
-    //either
-    ANY_START,
-    MODEL,
-    MESH,
-    MATERIAL
-
-}; //well that was a lot
-
-// time stuff in this function inspired by https://stackoverflow.com/a/27856440
-void clog(debug_mode mode, std::string input) { 
-    if(mode < D_MODE) {return;}
-    std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::cout << "[" << std::ctime(&time) << "] (" << mode << ") " << input << std::endl;
-}
-
-class Resource { // the beginning of it all muahahaha
-protected:
-    res_type type;
-    char* path;
-public:
-    res_type getType() {
-        return type;
-    }
-};
-
-class ImageResource: public Resource {
-private:
-    Image* pointer;
-public:
-    Image image;
-    ImageResource(char* respath) {
-        path = respath;
-        type = IMAGE;
-        load();
-    }
-
-    Image* load() {
-        image = LoadImage(path);
-        pointer = &image;
-        return &image;
-    }
-
-    void unload() {
-        UnloadImage(image);
-    }
 
 
-    ~ImageResource() {
-        unload();
-    }
-
-
-};
-
-class Texture2DResource: public Resource {
-private:
-    Texture2D* t_pointer;
-    bool imgPath = false;
-    Image* i_pointer;
-public:
-    Texture2D texture;
-    //Overloaded constructor
-    //the first definition using char* will first load an image, then load a texture from that image
-    //the second definition will load a texture from a given Image object
-    //the second mode of operation requires the image to still be around when loading and unloading
-    Texture2DResource(char* respath) {
-        path = respath;
-        type = TEXTURE2D;
-        imgPath = true;
-        load();
-    }
-
-    Texture2DResource(Image fromImage) {
-        type = TEXTURE2D;
-        i_pointer = &fromImage;
-        load();
-    }
-
-    Texture2D* load() {
-        if (imgPath) {
-            Image image = LoadImage(path); //avoiding a memory leak
-            texture = LoadTextureFromImage(image);
-            UnloadImage(image);
-        }
-        else {
-            texture = LoadTextureFromImage(*i_pointer);
-        }
-        t_pointer = &texture;
-        return t_pointer;
-    }
-
-    void unload() {
-        UnloadTexture(texture);
-    }
-
-    ~Texture2DResource() {
-        unload();
-    }
-};
 
 
 class ResourceManager {
 private:
     //this is designed to be instantiated per-level, maybe idk
     std::vector<Resource*> resources;
-    
+
 public:
     int findResource(Resource* item) {
         for(unsigned int i=0; i < resources.size(); i++) {
@@ -167,7 +26,7 @@ public:
         }
         return -1;
     }
-    void removeRes(Resource* res) {
+    void removeResource(Resource* res) {
         int index = findResource(res);
         if (index > -1) {
             resources.erase(resources.begin() + index);
@@ -177,6 +36,9 @@ public:
         }
     }
 
+    //instantiates and pushes resource to manager, returning a pointer for that resource
+    //example usage:
+    //Texture2DResource* tex = rema.pload<Texture2DResource> ("wabbit_alpha.png");
     template <class T> 
     T* pload(const char* arg) {
         T* item = new T((char*)arg);
@@ -185,6 +47,10 @@ public:
         
     }
 
+    //instantiates and pushes resource to manager, returning a pointer for that resource
+    //example usage:
+    //ImageResource* img = rema.pload<ImageResource> ("wabbit_alpha.png");
+    //Texture2DResource* tex = rema.pload<Texture2DResource, Image> ((*img).image);
     template<class T, typename Y>
     T* pload(Y arg) {
         T* item = new T(arg);
@@ -196,10 +62,13 @@ public:
         resources.push_back(res);
     }
 
-    // uses delete on every pointer in resources
+    // delete doesn't work, need a template to call the class specifically
+    // OR I CAN USE A VIRTUAL FUNCTION. this seems like the best idea
+
     void clearAll() {
         for(Resource* res : resources) {
-            delete res; //hoping this invokes the destructor. probably does. hopefully
+            res->unload();
+            delete res; //
         }
         resources.clear();
     }

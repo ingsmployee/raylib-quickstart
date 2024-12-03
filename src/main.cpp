@@ -28,10 +28,11 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 
 // I, @ingsoc on Discord and https://steamcommunity.com/id/fdslajkfklsadfjkslfjsd/ (Robot Employee\#1) on Steam, have modified this file/project/repo beyond the original source.
 
-
+#include <iostream>
 #include "raylib.h"
-
-#include "overall.h"
+#include <vector>
+#include "resource_manager.h"
+#include "game_stuff.h"
 
 
 int main ()
@@ -51,14 +52,14 @@ int main ()
 
 
 		//Texture2DResource* pTexture = (Texture2DResource*)rema.push(new Texture2DResource("wabbit_alpha.png"));
-		//Image i = LoadImage("wabbit_alpha.png");
+
 		//Texture2DResource* pTexture = remaPush<Texture2DResource> (rema, "wabbit_alpha.png");
 
 		//well this seems pretty straightforward to me. probably not the most performant but who cares
 		Texture2DResource* pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
 
 		
-		std::cout << pTexture << std::endl;
+
 
 		//trying to get this syntax to work using overloaded or newly defined operators
 		//rema load new Texture2DResource("wabbit_alpha.png");
@@ -76,10 +77,10 @@ int main ()
 
 		EndDrawing();
 
-		if (IsKeyDown(KEY_G)) {
+		if (IsKeyPressed(KEY_G)) {
 			pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
 		}
-		if (IsKeyDown(KEY_H)) {
+		if (IsKeyPressed(KEY_H)) {
 			rema.clearAll();
 		}
 		
