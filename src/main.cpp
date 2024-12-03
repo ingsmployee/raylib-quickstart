@@ -32,11 +32,12 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 #include "raylib.h"
 
 #include "overall.h"
-#include "game_stuff.h"
 
 int main ()
 {
 	ChangeDirectory("resources"); //make sure these glorpaglogangaigrangers load properly ykyk
+
+	std::vector<Resource> g;
 
 	InitWindow(500, 500, "grano");
 
@@ -45,6 +46,9 @@ int main ()
 	std::cout << typeid(Game).name();
 	std::cout << typeid(game).name();
 
+	ImageResource ir = *new ImageResource("wabbit_alpha.png");
+	Texture2DResource tr = *new Texture2DResource("wabbit_alpha.png");
+
 	SetTargetFPS(30); //TODO: make function thingy that tells the game to update outside of frame stuff
 	while (!WindowShouldClose()) {
 		BeginDrawing();
@@ -52,9 +56,16 @@ int main ()
 
 		game.draw();
 
+		DrawTexture(tr.texture, 30, 30, WHITE);
+
 		EndDrawing();
 
-		
+		if (IsKeyDown(KEY_G)) {
+			ir.load();
+		}
+		if (IsKeyDown(KEY_H)) {
+			ir.unload();
+		}
 		
 	}
 	CloseWindow();

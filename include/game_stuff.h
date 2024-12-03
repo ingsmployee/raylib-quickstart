@@ -92,7 +92,6 @@ class Spider {
 
 class Level {
 private:
-    MemoryManager mem = MemoryManager();
     std::vector<void*> objects;
 public:
     void requestExit() {
@@ -100,7 +99,7 @@ public:
     }
 
     void unload() {
-        mem.clearAll();
+        
     }
 
     void draw() {
@@ -114,7 +113,6 @@ public:
 
 class Game {
 private:
-    MemoryManager mem = MemoryManager();
     bool shouldQuit;
     Level currentLevel;
 
