@@ -1,9 +1,10 @@
 #pragma once
 
 #include <iostream>
-#include <vector>
-#include "resource_manager.h"
-#include "game_stuff.h"
 
-//#include "levels.h"
+#include "resource_base.h"
+#include "resource_manager.h"
+
+#include "objects_and_level.h"
+#include "levels.h"
 

@@ -31,15 +31,14 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 #include <iostream>
 #include "raylib.h"
 #include <vector>
-#include "resource_manager.h"
-#include "game_stuff.h"
+
+#include "overall.h"
+#include <memory>
 
 
 int main ()
 {
 	ChangeDirectory("resources"); //make sure these glorpaglogangaigrangers load properly ykyk
-
-	
 
 	InitWindow(500, 500, "grano");
 
@@ -56,7 +55,13 @@ int main ()
 		//Texture2DResource* pTexture = remaPush<Texture2DResource> (rema, "wabbit_alpha.png");
 
 		//well this seems pretty straightforward to me. probably not the most performant but who cares
-		Texture2DResource* pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
+
+		//new version using shared_ptr
+		auto pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
+		//TODO: figure out a system of "if we already loaded this resource..." with shared ptrs, to save on memory
+		//note that it might have a bottleneck if everything accessing one thing in memory is too much,,,
+		//thanks to the reference count thing, it may be possible to instantiate multiple resources in that case
+		//although the consequences of the note are unlikely
 
 		
 

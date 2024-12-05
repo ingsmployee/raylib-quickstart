@@ -4,6 +4,7 @@
 #include <iostream>
 #include "raylib.h"
 #include <vector>
+#include <memory>
 
 #include "resource_base.h"
 
@@ -15,18 +16,18 @@
 class ResourceManager {
 private:
     //this is designed to be instantiated per-level, maybe idk
-    std::vector<Resource*> resources;
+    std::vector<std::shared_ptr<Resource>> resources;
 
 public:
-    int findResource(Resource* item) {
+    int findResource(std::shared_ptr<Resource> item) {
         for(unsigned int i=0; i < resources.size(); i++) {
-            if (item == resources.at(i)) {
+            if (item.get() == resources.at(i).get()) {
                 return i;
             }
         }
         return -1;
     }
-    void removeResource(Resource* res) {
+    void removeResource(std::shared_ptr<Resource> res) {
         int index = findResource(res);
         if (index > -1) {
             resources.erase(resources.begin() + index);
@@ -40,8 +41,8 @@ public:
     //example usage:
     //Texture2DResource* tex = rema.pload<Texture2DResource> ("wabbit_alpha.png");
     template <class T> 
-    T* pload(const char* arg) {
-        T* item = new T((char*)arg);
+    std::shared_ptr<T> pload(const char* arg) {
+        std::shared_ptr<T> item (new T((char*)arg));
         resources.push_back(item);
         return item;
         
@@ -51,14 +52,14 @@ public:
     //example usage:
     //ImageResource* img = rema.pload<ImageResource> ("wabbit_alpha.png");
     //Texture2DResource* tex = rema.pload<Texture2DResource, Image> ((*img).image);
-    template<class T, typename Y>
-    T* pload(Y arg) {
-        T* item = new T(arg);
+    template<class T, class... Y>
+    std::shared_ptr<T> pload(Y... args) {
+        std::shared_ptr<T> item (new T(args...));
         resources.push_back(item);
         return item;
     }
 
-    void push(Resource* res) {
+    void push(std::shared_ptr<Resource> res) {
         resources.push_back(res);
     }
 
@@ -66,9 +67,9 @@ public:
     // OR I CAN USE A VIRTUAL FUNCTION. this seems like the best idea
 
     void clearAll() {
-        for(Resource* res : resources) {
-            res->unload();
-            delete res; //
+        for(std::shared_ptr<Resource> res : resources) {
+            //res->unload();
+            //delete res;
         }
         resources.clear();
     }

@@ -3,6 +3,7 @@
 #include "debug_stuff.h"
 #include <iostream>
 #include "raylib.h"
+#include <memory>
 
 enum mem_type {
     RAM_TYPE,
@@ -61,7 +62,7 @@ public:
 
     virtual void unload() {
         clog(D_RESOURCE, "Attempting to unload a base Resource class!");
-    };
+    }
 
     
 };
