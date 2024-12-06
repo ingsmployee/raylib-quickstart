@@ -58,9 +58,29 @@ class Resource { // the beginning of it all muahahaha
 protected:
     res_type type;
 
+    
+
+    
+    
 public:
     char* path;
     char* id;
+
+    virtual void deleter();
+    // allocator is heavily taken from https://www.geeksforgeeks.org/how-to-create-custom-memory-allocator-in-cpp/
+    template<typename T>
+    class deleterAllocator {
+        typedef T value_type;
+        deleterAllocator() noexcept {}
+        T* allocate(std::size_t n) {
+            return static_cast<T*>(::operator new(n * sizeof(T)));
+        }
+
+        void deallocate(T* p, std::size_t n) noexcept {
+            deleter();
+        }
+
+    };
 
     // if you have to call this, something is wrong
     res_type getType() {
@@ -83,6 +103,8 @@ public:
         UnloadImage(*i);
     }
 
+    deleterAllocator<Image> deleterWrapper;
+    
     ImageResource(char* respath) {
         path = (char*)respath;
         id = respath;
@@ -92,7 +114,7 @@ public:
 
     std::shared_ptr<Image> load() {
         if (!pointer) {
-            pointer = std::make_shared<Image> (LoadImage(path), deleter);
+            pointer = std::allocate_shared<Image> (LoadImage(path), deleterWrapper);
         }
         return pointer;
     }

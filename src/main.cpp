@@ -112,6 +112,13 @@ int main ()
 
 		ResourceManager::resource is a std::map<char*, std::shared_ptr<Resource>>
 		
+
+
+		Reminder of where I left off / TODO:
+		I was working in resource_base.h on ImageResource, trying to figure out how to make a custom allocator
+		so that I could have a custom deleter using std::allocate_shared
+
+		just found this link https://stackoverflow.com/a/70630630 but now i have to get off, it's also almost 4AM
 		
 		
 		

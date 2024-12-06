@@ -42,7 +42,7 @@ public:
         if (resources.count((char*)id) == 0) {
             // if there's nothing with that id, make a new one...
             std::shared_ptr<T> item (new T(id, args...));
-            
+
             return(item);
         }
         else {
@@ -60,16 +60,16 @@ public:
 
         if (resources.count((char*)id) == 0) {
             // if there's nothing with that id, make a new one
-            std::shared_ptr<T> item (new T(id, args...));
+            std::shared_ptr<T> item (new T((char*)id, args...));
             // tell it what its id is, just in case i need that later
-            item.get()->id = id;
+            item.get()->id = (char*)id;
             // actually put it into the map
             resources.insert((char*)id, item);
             return(item);
         }
         else {
             //if there's something with that id, just return that...
-            return(resources.at(id));
+            return(resources.at((char*)id));
         }
         
         //should never get here lmfao lonely ass
