@@ -60,6 +60,7 @@ protected:
 
 public:
     char* path;
+    char* id;
 
     // if you have to call this, something is wrong
     res_type getType() {
@@ -82,8 +83,9 @@ public:
         UnloadImage(*i);
     }
 
-    ImageResource(const char* respath) {
+    ImageResource(char* respath) {
         path = (char*)respath;
+        id = respath;
         type = IMAGE;
         load();
     }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "raylib.h"
 #include <vector>
+#include <map>
 #include <memory>
 
 #include "resource_base.h"
@@ -16,63 +17,74 @@
 class ResourceManager {
 private:
     //this is designed to be instantiated per-level, maybe idk
-    std::vector<std::shared_ptr<Resource>> resources;
+    std::map<char*, std::shared_ptr<Resource>> resources;
 
 public:
-    int findResource(std::shared_ptr<Resource> item) {
-        for(unsigned int i=0; i < resources.size(); i++) {
-            if (item.get() == resources.at(i).get()) {
-                return i;
+    char* findResource(std::shared_ptr<Resource>& item) {
+        for(const auto &m : resources) {
+            if (m.first == (*item.get()).id) {
+                return m.first;
             }
         }
-        return -1;
+        return "";
     }
     void removeResource(std::shared_ptr<Resource> res) {
-        int index = findResource(res);
-        if (index > -1) {
-            resources.erase(resources.begin() + index);
+        char* id = findResource(res);
+        if (id != "") {
+            resources.erase(id);
         }
         else {
             clog(D_RESOURCE, "Could not find resource in ResourceManager. Are you checking the right one?"); //this is asswater
         }
     }
 
-    //instantiates and pushes resource to manager, returning a pointer for that resource
-    //example usage:
-    //Texture2DResource* tex = rema.pload<Texture2DResource> ("wabbit_alpha.png");
-    template <class T> 
-    std::shared_ptr<T> pload(const char* arg) {
-        std::shared_ptr<T> item (new T(arg));
-        resources.push_back(item);
-        return item;
-        
+    template <class T, class...Y>
+    std::shared_ptr<T> getResource(char* id, Y...args) {
+        if (resources.count(id) == 0) {
+            // if there's nothing with that id, make a new one...
+            std::shared_ptr<T> item (new T(id, args...));
+            return(item);
+        }
+        else {
+            //if there's something with that id, just return that...
+            return(m.at(id));
+        }
     }
 
     //instantiates and pushes resource to manager, returning a pointer for that resource
     //example usage:
     //ImageResource* img = rema.pload<ImageResource> ("wabbit_alpha.png");
-    //Texture2DResource* tex = rema.pload<Texture2DResource, Image> ((*img).image);
+    //
     template<class T, class... Y>
-    std::shared_ptr<T> pload(Y... args) {
-        std::shared_ptr<T> item (new T(args...));
-        resources.push_back(item);
-        return item;
+    std::shared_ptr<T> pload(char* id, Y... args) {
+
+        if (resources.count(id) == 0) {
+            // if there's nothing with that id, make a new one
+            std::shared_ptr<T> item (new T(id, args...));
+            // tell it what its id is, just in case i need that later
+            item.get()->id = id;
+            // actually put it into the map
+            resources.insert(id, item);
+            return(item);
+        }
+        else {
+            //if there's something with that id, just return that...
+            return(m.at(id));
+        }
+        
+        //should never get here lmfao lonely ass
     }
 
-    void push(std::shared_ptr<Resource> res) {
-        resources.push_back(res);
-    }
-
-    // delete doesn't work, need a template to call the class specifically
-    // OR I CAN USE A VIRTUAL FUNCTION. this seems like the best idea
-
+    //DEPRECATED
+    //can't just like. grab all of the std::shared_ptr<Resource>s and delete them, y'know? undef behavior n all
+    /*
     void clearAll() {
         for(std::shared_ptr<Resource> res : resources) {
             //res->unload();
             //delete res;
         }
         resources.clear();
-    }
+    }*/
 
 
 
