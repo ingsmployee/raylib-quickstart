@@ -27,7 +27,7 @@ protected:
     ResourceManager rema = ResourceManager();
 public:
     void addResource(std::shared_ptr<Resource> res) {
-        rema.push(res);
+
     }
 };
 
@@ -132,7 +132,7 @@ class Level: public LevelPrototype {
 private:
     //the following line is from LevelPrototype:
     //ResourceManager rema = ResourceManager();
-    std::vector<Object2D*> objects;
+    std::vector<std::shared_ptr<Object2D>> objects;
 public:
 
 
@@ -143,21 +143,17 @@ public:
     std::shared_ptr<T> addObject(A... args) {
         
         std::shared_ptr<T> obj (new T(args...));
-        objects.push_back(obj.get());
+        objects.push_back(obj);
         obj->levelPtr = this;
         return obj;
     }
-
-    void addResource(std::shared_ptr<Resource> res) {
-        rema.push(res);
-    }
-    
-    
+    //note that it does not care about if there's an existing object and will always make another
+    //this differs from how ResourceManager does things, in that it uses
 
     void unload() {
-        rema.clearAll(); //rema will handle freeing resources from memory
-        for(Object2D* obj: objects) { //all things that aren't automatically deleted on deconstruction should be pushed to rema
-            delete obj;
+        for(std::shared_ptr<Object2D> obj: objects) { //all things that aren't automatically deleted on deconstruction should be pushed to rema
+            obj.reset();
+            
         } 
     }
 
@@ -165,14 +161,14 @@ public:
     virtual void update() {updateObjects();}
 
     void drawObjects() {
-        for(Object2D* obj: objects) {
-            obj->draw();
+        for(std::shared_ptr<Object2D> obj: objects) {
+            obj.get()->draw();
         }
     }
 
     void updateObjects() {
-        for(Object2D* obj: objects) {
-            obj->update();
+        for(std::shared_ptr<Object2D> obj: objects) {
+            obj.get()->update();
         }
     }
 };

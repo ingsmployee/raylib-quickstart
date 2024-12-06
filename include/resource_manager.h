@@ -3,7 +3,6 @@
 #include "debug_stuff.h"
 #include <iostream>
 #include "raylib.h"
-#include <vector>
 #include <map>
 #include <memory>
 
@@ -26,7 +25,7 @@ public:
                 return m.first;
             }
         }
-        return "";
+        return (char*)"";
     }
     void removeResource(std::shared_ptr<Resource> res) {
         char* id = findResource(res);
@@ -39,15 +38,16 @@ public:
     }
 
     template <class T, class...Y>
-    std::shared_ptr<T> getResource(char* id, Y...args) {
-        if (resources.count(id) == 0) {
+    std::shared_ptr<T> getResource(const char* id, Y...args) {
+        if (resources.count((char*)id) == 0) {
             // if there's nothing with that id, make a new one...
             std::shared_ptr<T> item (new T(id, args...));
+            
             return(item);
         }
         else {
             //if there's something with that id, just return that...
-            return(m.at(id));
+            return(resources.at((char*)id));
         }
     }
 
@@ -56,20 +56,20 @@ public:
     //ImageResource* img = rema.pload<ImageResource> ("wabbit_alpha.png");
     //
     template<class T, class... Y>
-    std::shared_ptr<T> pload(char* id, Y... args) {
+    std::shared_ptr<T> pload(const char* id, Y... args) {
 
-        if (resources.count(id) == 0) {
+        if (resources.count((char*)id) == 0) {
             // if there's nothing with that id, make a new one
             std::shared_ptr<T> item (new T(id, args...));
             // tell it what its id is, just in case i need that later
             item.get()->id = id;
             // actually put it into the map
-            resources.insert(id, item);
+            resources.insert((char*)id, item);
             return(item);
         }
         else {
             //if there's something with that id, just return that...
-            return(m.at(id));
+            return(resources.at(id));
         }
         
         //should never get here lmfao lonely ass

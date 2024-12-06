@@ -106,6 +106,7 @@
 		"*.m": "cpp",
 		"queue": "cpp",
 		"ranges": "cpp",
-		"stack": "cpp"
+		"stack": "cpp",
+		"xtree": "cpp"
 	}
 }

@@ -19,14 +19,15 @@ private:
 
 public:
 
-    std::shared_ptr<Centipede> centipedeSplit(Centipede* og, Vector2 bodyPartPos) {
-        std::deque<Vector2>* body_a = &(og->body);
-        int index = Vec2FindInDeque(*body_a, bodyPartPos);
+    std::shared_ptr<Centipede> centipedeSplit(std::shared_ptr<Centipede> centipede, Vector2 bodyPartPos) {
+        Centipede* og = centipede.get();
+        std::deque<Vector2> body_a = (og->body);
+        int index = Vec2FindInDeque(body_a, bodyPartPos);
 
-        std::shared_ptr<Centipede> clone = addObject<Centipede> (*body_a, og->getDirection());
+        std::shared_ptr<Centipede> clone = addObject<Centipede> (body_a, og->getDirection());
         clone->body.erase(clone->body.begin() + index, clone->body.end());
 
-        body_a->erase(body_a->begin(), body_a->begin() + index); // probably shit im ngl
+        body_a.erase(body_a.begin(), body_a.begin() + index); // probably shit im ngl
 
         return clone;
     }
