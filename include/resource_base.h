@@ -49,13 +49,19 @@ enum res_type { //organized for clarity. doesn't really matter
 
 }; //well that was a lot
 
-
+template<typename T, class Y>
+T getFromResource(std::shared_ptr<Y> p) {
+    return (p.get()->get());
+}
 
 class Resource { // the beginning of it all muahahaha
 protected:
     res_type type;
-    char* path;
+
 public:
+    char* path;
+
+    // if you have to call this, something is wrong
     res_type getType() {
         return type;
     }
@@ -64,30 +70,38 @@ public:
         clog(D_RESOURCE, "Attempting to unload a base Resource class!");
     }
 
+    virtual ~Resource() {};
     
 };
 
 class ImageResource: public Resource {
 private:
-    Image* pointer;
+    std::shared_ptr<Image> pointer;
 public:
-    Image image;
-    ImageResource(char* respath) {
-        path = respath;
+    void deleter(Image* i) {
+        UnloadImage(*i);
+    }
+
+    ImageResource(const char* respath) {
+        path = (char*)respath;
         type = IMAGE;
         load();
     }
 
-    Image* load() {
-        image = LoadImage(path);
-        pointer = &image;
-        return &image;
+    std::shared_ptr<Image> load() {
+        if (!pointer) {
+            pointer = std::make_shared<Image> (LoadImage(path), deleter);
+        }
+        return pointer;
     }
 
     void unload() {
-        UnloadImage(image);
+        pointer.reset();
     }
 
+    Image get() {
+        return *(pointer.get());
+    }
 
     ~ImageResource() {
         unload();
@@ -98,11 +112,14 @@ public:
 
 class Texture2DResource: public Resource {
 private:
-    Texture2D* t_pointer;
+    std::shared_ptr<Texture> pointer;
     bool imgPath = false;
-    Image* i_pointer;
+    std::shared_ptr<ImageResource> imageResPointer;
 public:
-    Texture2D texture;
+    void deleter(Texture* t) {
+        UnloadTexture(*t);
+    }
+
     //Overloaded constructor
     //the first definition using char* will first load an image, then load a texture from that image
     //the second definition will load a texture from a given Image object
@@ -114,27 +131,33 @@ public:
         load();
     }
 
-    Texture2DResource(Image fromImage) {
+    Texture2DResource(ImageResource fromImageResource) {
         type = TEXTURE2D;
-        i_pointer = &fromImage;
+        imageResPointer = std::make_shared<ImageResource>(fromImageResource);
         load();
     }
 
-    Texture2D* load() {
-        if (imgPath) {
-            Image image = LoadImage(path); //avoiding a memory leak
-            texture = LoadTextureFromImage(image);
-            UnloadImage(image);
+    Texture get() {
+        return *(pointer.get());
+    }
+
+    std::shared_ptr<Texture> load() {
+        if (!pointer) {
+            if (imageResPointer) {
+                Image temp = LoadImage(path); // very temporary
+                pointer = std::make_shared<Texture> (LoadTextureFromImage(temp), deleter);
+                UnloadImage(temp);
+            }
+            else {
+                //note that this dereferences the get() from i_pointer, not i_pointer itself
+                pointer = std::make_shared<Texture> (LoadTextureFromImage(getFromResource<Image>(imageResPointer)), deleter);
+            }
         }
-        else {
-            texture = LoadTextureFromImage(*i_pointer);
-        }
-        t_pointer = &texture;
-        return t_pointer;
+        return pointer;
     }
 
     void unload() {
-        UnloadTexture(texture);
+        pointer.reset();
     }
 
     ~Texture2DResource() {

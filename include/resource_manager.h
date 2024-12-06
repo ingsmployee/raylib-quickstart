@@ -42,7 +42,7 @@ public:
     //Texture2DResource* tex = rema.pload<Texture2DResource> ("wabbit_alpha.png");
     template <class T> 
     std::shared_ptr<T> pload(const char* arg) {
-        std::shared_ptr<T> item (new T((char*)arg));
+        std::shared_ptr<T> item (new T(arg));
         resources.push_back(item);
         return item;
         

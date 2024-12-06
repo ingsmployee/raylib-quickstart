@@ -35,7 +35,6 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 #include "overall.h"
 #include <memory>
 
-
 int main ()
 {
 	ChangeDirectory("resources"); //make sure these glorpaglogangaigrangers load properly ykyk
@@ -58,10 +57,18 @@ int main ()
 
 		//new version using shared_ptr
 		auto pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
-		//TODO: figure out a system of "if we already loaded this resource..." with shared ptrs, to save on memory
-		//note that it might have a bottleneck if everything accessing one thing in memory is too much,,,
-		//thanks to the reference count thing, it may be possible to instantiate multiple resources in that case
-		//although the consequences of the note are unlikely
+
+		//TODO:
+		/*
+		Implement the custom deleters using std::allocate_shared with an Allocator object.
+		Have ResourceManager get the std::shared_ptr of a resource which we have loaded from before...
+		Perhaps it could work like this...
+		
+		
+		
+		
+		
+		*/
 
 		
 
@@ -77,8 +84,7 @@ int main ()
 		ClearBackground(BLACK);
 
 		game.draw();
-
-		DrawTexture((*pTexture).texture, 30, 30, WHITE);
+		DrawTexture(getFromResource<Texture>(pTexture), 30, 30, WHITE);
 
 		EndDrawing();
 
