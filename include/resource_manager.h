@@ -16,19 +16,19 @@
 class ResourceManager {
 private:
     //this is designed to be instantiated per-level, maybe idk
-    std::map<char*, std::shared_ptr<Resource>> resources;
+    std::map<const char*, std::shared_ptr<Resource>> resources;
 
 public:
-    char* findResource(std::shared_ptr<Resource>& item) {
+    const char* findResource(std::shared_ptr<Resource>& item) {
         for(const auto &m : resources) {
             if (m.first == (*item.get()).id) {
                 return m.first;
             }
         }
-        return (char*)"";
+        return "";
     }
     void removeResource(std::shared_ptr<Resource> res) {
-        char* id = findResource(res);
+        const char* id = findResource(res);
         if (id != "") {
             resources.erase(id);
         }
