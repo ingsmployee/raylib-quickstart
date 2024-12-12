@@ -49,10 +49,7 @@ enum res_type { //organized for clarity. doesn't really matter
 
 }; //well that was a lot
 
-template<typename T, class Y>
-T getFromResource(std::shared_ptr<Y> p) {
-    return (p.get()->get());
-}
+
 
 class Resource { // the beginning of it all muahahaha
 protected:
@@ -66,23 +63,7 @@ public:
     char* path;
     char* id;
 
-    virtual void deleter();
-    // allocator is heavily taken from https://www.geeksforgeeks.org/how-to-create-custom-memory-allocator-in-cpp/
-    template<typename T>
-    class deleterAllocator {
-        typedef T value_type;
-        deleterAllocator() noexcept {}
-        T* allocate(std::size_t n) {
-            return static_cast<T*>(::operator new(n * sizeof(T)));
-        }
-
-        void deallocate(T* p, std::size_t n) noexcept {
-            deleter();
-        }
-
-    };
-
-    // if you have to call this, something is wrong
+    // if you have to call this, don't
     res_type getType() {
         return type;
     }
@@ -97,34 +78,23 @@ public:
 
 class ImageResource: public Resource {
 private:
-    std::shared_ptr<Image> pointer;
+    Image* pointer;
+    Image resource;
 public:
-    void deleter(Image* i) {
-        UnloadImage(*i);
-    }
-
-    deleterAllocator<Image> deleterWrapper;
-    
     ImageResource(char* respath) {
         path = (char*)respath;
         id = respath;
         type = IMAGE;
-        load();
-    }
-
-    std::shared_ptr<Image> load() {
-        if (!pointer) {
-            pointer = std::allocate_shared<Image> (LoadImage(path), deleterWrapper);
-        }
-        return pointer;
+        resource = LoadImage(path);
+        pointer = &resource;
     }
 
     void unload() {
-        pointer.reset();
+        UnloadImage(resource);
     }
 
     Image get() {
-        return *(pointer.get());
+        return resource;
     }
 
     ~ImageResource() {
@@ -134,11 +104,12 @@ public:
 
 };
 
-class Texture2DResource: public Resource {
+class TextureResource: public Resource {
 private:
-    std::shared_ptr<Texture> pointer;
+    Texture resource;
+    Texture* pointer;
     bool imgPath = false;
-    std::shared_ptr<ImageResource> imageResPointer;
+    std::shared_ptr<ImageResource> imageRes;
 public:
     void deleter(Texture* t) {
         UnloadTexture(*t);
@@ -148,43 +119,54 @@ public:
     //the first definition using char* will first load an image, then load a texture from that image
     //the second definition will load a texture from a given Image object
     //the second mode of operation requires the image to still be around when loading and unloading
-    Texture2DResource(char* respath) {
-        path = respath;
+    TextureResource(const char* respath) {
+        path = (char*)respath;
         type = TEXTURE2D;
-        imgPath = true;
-        load();
+        resource = LoadTexture(respath);
+        pointer = &resource;
     }
 
-    Texture2DResource(ImageResource fromImageResource) {
+    TextureResource(std::shared_ptr<ImageResource> i) {
         type = TEXTURE2D;
-        imageResPointer = std::make_shared<ImageResource>(fromImageResource);
-        load();
+        imageRes = i;
+        resource = LoadTextureFromImage(i.get()->get());
+        pointer = &resource;
     }
 
     Texture get() {
-        return *(pointer.get());
-    }
-
-    std::shared_ptr<Texture> load() {
-        if (!pointer) {
-            if (imageResPointer) {
-                Image temp = LoadImage(path); // very temporary
-                pointer = std::make_shared<Texture> (LoadTextureFromImage(temp), deleter);
-                UnloadImage(temp);
-            }
-            else {
-                //note that this dereferences the get() from i_pointer, not i_pointer itself
-                pointer = std::make_shared<Texture> (LoadTextureFromImage(getFromResource<Image>(imageResPointer)), deleter);
-            }
-        }
-        return pointer;
+        return resource;
     }
 
     void unload() {
-        pointer.reset();
+        UnloadTexture(resource);
     }
 
-    ~Texture2DResource() {
+    ~TextureResource() {
         unload();
     }
 };
+
+
+
+
+Texture errorTexture;
+
+Texture getFromResource(std::shared_ptr<TextureResource> p) {
+    if(p.get()) {
+        Texture item = p.get()->get();
+        return (item);
+    }
+    return errorTexture;
+}
+
+
+
+template<typename T, class Y>
+T getFromResource(std::shared_ptr<Y> p) {
+    if(p.get()) {
+        T item = p.get()->get();
+        return (item);
+    }
+    return T();
+}
+

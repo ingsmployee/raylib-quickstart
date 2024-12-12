@@ -37,6 +37,10 @@ public:
         }
     }
 
+    void clearAll() { //probably unoptimized
+        resources.clear();
+    }
+
     template <class T, class...Y>
     std::shared_ptr<T> getResource(const char* id, Y...args) {
         if (resources.count((char*)id) == 0) {
@@ -51,7 +55,7 @@ public:
         }
     }
 
-    //instantiates and pushes resource to manager, returning a pointer for that resource
+    //returns shared_ptr to a resource from the manager, if that resource isn't in the manager (by index) it instantiates a new one
     //example usage:
     //ImageResource* img = rema.pload<ImageResource> ("wabbit_alpha.png");
     //
@@ -64,12 +68,12 @@ public:
             // tell it what its id is, just in case i need that later
             item.get()->id = (char*)id;
             // actually put it into the map
-            resources.insert((char*)id, item);
+            resources.insert(std::pair<char*, std::shared_ptr<Resource>>((char*)id, std::static_pointer_cast<Resource>(item)));
             return(item);
         }
         else {
             //if there's something with that id, just return that...
-            return(resources.at((char*)id));
+            return(std::dynamic_pointer_cast<T>(resources.at((char*)id)));
         }
         
         //should never get here lmfao lonely ass

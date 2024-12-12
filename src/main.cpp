@@ -41,6 +41,8 @@ int main ()
 
 	InitWindow(500, 500, "grano");
 
+	errorTexture = LoadTexture("error.png");
+
 	Game game;
 
 	ResourceManager rema;
@@ -49,86 +51,80 @@ int main ()
 
 
 
-		//Texture2DResource* pTexture = (Texture2DResource*)rema.push(new Texture2DResource("wabbit_alpha.png"));
+	//TextureResource* pTexture = (TextureResource*)rema.push(new TextureResource("wabbit_alpha.png"));
 
-		//Texture2DResource* pTexture = remaPush<Texture2DResource> (rema, "wabbit_alpha.png");
+	//TextureResource* pTexture = remaPush<TextureResource> (rema, "wabbit_alpha.png");
 
-		//well this seems pretty straightforward to me. probably not the most performant but who cares
+	//well this seems pretty straightforward to me. probably not the most performant but who cares
 
-		//new version using shared_ptr
-		auto pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
+	//new version using shared_ptr
+	std::shared_ptr<TextureResource> pTexture;
 
-		//TODO:
-		/*
-		Implement the custom deleters using std::allocate_shared with an Allocator object.
-		Have ResourceManager get the std::shared_ptr of a resource which we have loaded from before...
+	//TODO:
+	/*
+	Implement the custom deleters using std::allocate_shared with an Allocator object.
+	Have ResourceManager get the std::shared_ptr of a resource which we have loaded from before...
 
-		What it needs to be able to do:
-		1. be sorted for ease of looking things up. makes things take longer to load the first time.
-		2. be able to be indexed by the resource that was used to make the thing
+	What it needs to be able to do:
+	1. be sorted for ease of looking things up. makes things take longer to load the first time.
+	2. be able to be indexed by the resource that was used to make the thing
 
-		Perhaps it could work like this...
-		OH MY GOD JUST USE AN ID SYSTEM!!!
+	Perhaps it could work like this...
+	OH MY GOD JUST USE AN ID SYSTEM!!!
 
-		In ResourceManager, when a Resource is requested to be created (using pload());
-		1.  Mandate that a const char* identifier is provided, preferably as the first argument
-		2.  Check if ResourceManager::resource (which is a std::map<char*, std::shared_ptr<Resource>>)
-			already has that char* identifier as a key
-		3a. If that char* identifier is already in the map, then return a std::shared_ptr<T>, where T
-			is a derived class of Resource. T because pload() is a template function.
-		3b. If that char* identifier is NOT in the map, then create a std::shared_ptr<T> and push it
-			to the map with that given identifier.
+	In ResourceManager, when a Resource is requested to be created (using pload());
+	1.  Mandate that a const char* identifier is provided, preferably as the first argument
+	2.  Check if ResourceManager::resource (which is a std::map<char*, std::shared_ptr<Resource>>)
+		already has that char* identifier as a key
+	3a. If that char* identifier is already in the map, then return a std::shared_ptr<T>, where T
+		is a derived class of Resource. T because pload() is a template function.
+	3b. If that char* identifier is NOT in the map, then create a std::shared_ptr<T> and push it
+		to the map with that given identifier.
 
-		When a Resource is actually created in ResourceManager, provide it with a pointer back to the
-		ResourceManager. This will allow it to tell the ResourceManager when it is unloading, so that
-		the ResourceManager can check the std::shared_ptr reference count and reset it if the count
-		is 1.
+	When a Resource is actually created in ResourceManager, provide it with a pointer back to the
+	ResourceManager. This will allow it to tell the ResourceManager when it is unloading, so that
+	the ResourceManager can check the std::shared_ptr reference count and reset it if the count
+	is 1.
 
 
-		class ResourceManager;
-		
-		class Resource {
-		protected:
-			char* id;
-			(Stuff here...)
-		public:
-			ResourceManager* boundResourceManager;
-			Resource(int i) {
-				id = i;
-			}
-		(Rest of the class here...)
+	class ResourceManager;
+	
+	class Resource {
+	protected:
+		char* id;
+		(Stuff here...)
+	public:
+		ResourceManager* boundResourceManager;
+		Resource(int i) {
+			id = i;
 		}
+	(Rest of the class here...)
+	}
 
-		class ImageResource : public Resource {
-		(...)
-		ImageResource(const char* identifier, const char* path) : Resource(id) {
-		}
-		(...)
-		}
+	class ImageResource : public Resource {
+	(...)
+	ImageResource(const char* identifier, const char* path) : Resource(id) {
+	}
+	(...)
+	}
 
-		const char* id
-		
-		
+	const char* id
+	
+	
 
-		ResourceManager::resource is a std::map<char*, std::shared_ptr<Resource>>
-		
-
-
-		Reminder of where I left off / TODO:
-		I was working in resource_base.h on ImageResource, trying to figure out how to make a custom allocator
-		so that I could have a custom deleter using std::allocate_shared
-
-		just found this link https://stackoverflow.com/a/70630630 but now i have to get off, it's also almost 4AM
-		
-		
-		
-		*/
-
-		
+	ResourceManager::resource is a std::map<char*, std::shared_ptr<Resource>>
+	
 
 
-		//trying to get this syntax to work using overloaded or newly defined operators
-		//rema load new Texture2DResource("wabbit_alpha.png");
+	Reminder of where I left off / TODO:
+	I was working in resource_base.h on ImageResource, trying to figure out how to make a custom allocator
+	so that I could have a custom deleter using std::allocate_shared
+
+	just found this link https://stackoverflow.com/a/70630630 but now i have to get off, it's also almost 4AM
+	
+	
+	
+	*/
 		
 
 
@@ -138,15 +134,16 @@ int main ()
 		ClearBackground(BLACK);
 
 		game.draw();
+		DrawTexture(errorTexture, 150, 150, WHITE);
 		DrawTexture(getFromResource<Texture>(pTexture), 30, 30, WHITE);
 
 		EndDrawing();
 
 		if (IsKeyPressed(KEY_G)) {
-			pTexture = rema.pload<Texture2DResource> ("wabbit_alpha.png");
+			pTexture = rema.pload<TextureResource> ("wabbit_alpha.png");
 		}
 		if (IsKeyPressed(KEY_H)) {
-			//rema.clearAll();
+			rema.clearAll();
 		}
 		
 	}
