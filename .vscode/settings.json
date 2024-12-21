@@ -107,6 +107,7 @@
 		"queue": "cpp",
 		"ranges": "cpp",
 		"stack": "cpp",
-		"xtree": "cpp"
+		"xtree": "cpp",
+		"glfw3.h": "c"
 	}
 }
