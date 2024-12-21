@@ -1,10 +1,9 @@
 #pragma once
 
-#include "objects_and_level.h"
+#include "specific.h"
 #include <deque>
 
-
-class Level1 : public Level {
+class CentipedeLevel : public Level {
 private:
 
     int Vec2FindInDeque(std::deque<Vector2> d, Vector2 v) {
@@ -19,16 +18,16 @@ private:
 
 public:
 
-    std::shared_ptr<Centipede> centipedeSplit(std::shared_ptr<Centipede> centipede, Vector2 bodyPartPos) {
-        Centipede* og = centipede.get();
-        std::deque<Vector2> body_a = (og->body);
+    void centipedeSplit(std::shared_ptr<Centipede> originalCentipede, Vector2 bodyPartPos) {
+        std::deque<Vector2> body_a = (originalCentipede->body);
         int index = Vec2FindInDeque(body_a, bodyPartPos);
 
-        std::shared_ptr<Centipede> clone = addObject<Centipede> (body_a, og->getDirection());
+        std::shared_ptr<Centipede> clone = (obma->createGameObject<Centipede>(body_a, originalCentipede->getDirection())).lock();
+
         clone->body.erase(clone->body.begin() + index, clone->body.end());
 
         body_a.erase(body_a.begin(), body_a.begin() + index); // probably shit im ngl
 
-        return clone;
+        return;
     }
 };

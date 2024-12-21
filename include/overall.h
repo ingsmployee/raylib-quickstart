@@ -2,9 +2,8 @@
 
 #include <iostream>
 
-#include "resource_base.h"
-#include "resource_manager.h"
+#include "managers.h"
 
-#include "objects_and_level.h"
+#include "specific.h"
 #include "levels.h"
 

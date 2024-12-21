@@ -15,7 +15,7 @@ enum debug_mode {
 
 debug_mode D_MODE = D_RESOURCE;
 
-// time stuff in this function inspired by https://stackoverflow.com/a/27856440
+// time stuff in this function more or less stolen from https://stackoverflow.com/a/27856440
 void clog(debug_mode mode, std::string input) { 
     if(mode < D_MODE) {return;}
     std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());

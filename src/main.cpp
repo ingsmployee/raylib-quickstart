@@ -41,13 +41,13 @@ int main ()
 
 	InitWindow(500, 500, "grano");
 
-	errorTexture = LoadTexture("error.png");
+	errorTexture = LoadTexture("error.png"); //this texture is global and always loaded... i could probably make something to load it dynamically, but whatever
 
-	Game game;
+	Game game = Game();
+	//CentipedeLevel mainLevel = CentipedeLevel();
 
-	ResourceManager rema;
-	
-
+	std::shared_ptr<CentipedeLevel> mainLevel (new CentipedeLevel());
+	game.switchToLevel(mainLevel);
 
 
 
@@ -58,75 +58,8 @@ int main ()
 	//well this seems pretty straightforward to me. probably not the most performant but who cares
 
 	//new version using shared_ptr
-	std::shared_ptr<TextureResource> pTexture;
 
-	//TODO:
-	/*
-	Implement the custom deleters using std::allocate_shared with an Allocator object.
-	Have ResourceManager get the std::shared_ptr of a resource which we have loaded from before...
-
-	What it needs to be able to do:
-	1. be sorted for ease of looking things up. makes things take longer to load the first time.
-	2. be able to be indexed by the resource that was used to make the thing
-
-	Perhaps it could work like this...
-	OH MY GOD JUST USE AN ID SYSTEM!!!
-
-	In ResourceManager, when a Resource is requested to be created (using pload());
-	1.  Mandate that a const char* identifier is provided, preferably as the first argument
-	2.  Check if ResourceManager::resource (which is a std::map<char*, std::shared_ptr<Resource>>)
-		already has that char* identifier as a key
-	3a. If that char* identifier is already in the map, then return a std::shared_ptr<T>, where T
-		is a derived class of Resource. T because pload() is a template function.
-	3b. If that char* identifier is NOT in the map, then create a std::shared_ptr<T> and push it
-		to the map with that given identifier.
-
-	When a Resource is actually created in ResourceManager, provide it with a pointer back to the
-	ResourceManager. This will allow it to tell the ResourceManager when it is unloading, so that
-	the ResourceManager can check the std::shared_ptr reference count and reset it if the count
-	is 1.
-
-
-	class ResourceManager;
-	
-	class Resource {
-	protected:
-		char* id;
-		(Stuff here...)
-	public:
-		ResourceManager* boundResourceManager;
-		Resource(int i) {
-			id = i;
-		}
-	(Rest of the class here...)
-	}
-
-	class ImageResource : public Resource {
-	(...)
-	ImageResource(const char* identifier, const char* path) : Resource(id) {
-	}
-	(...)
-	}
-
-	const char* id
-	
-	
-
-	ResourceManager::resource is a std::map<char*, std::shared_ptr<Resource>>
-	
-
-
-	Reminder of where I left off / TODO:
-	I was working in resource_base.h on ImageResource, trying to figure out how to make a custom allocator
-	so that I could have a custom deleter using std::allocate_shared
-
-	just found this link https://stackoverflow.com/a/70630630 but now i have to get off, it's also almost 4AM
-	
-	
-	
-	*/
-		
-
+	//TODO: make object manager to be used in the Level class....
 
 	SetTargetFPS(30); //TODO: make function thingy that tells the game to update outside of frame stuff
 	while (!WindowShouldClose()) {
@@ -135,15 +68,14 @@ int main ()
 
 		game.draw();
 		DrawTexture(errorTexture, 150, 150, WHITE);
-		DrawTexture(getFromResource<Texture>(pTexture), 30, 30, WHITE);
 
 		EndDrawing();
 
-		if (IsKeyPressed(KEY_G)) {
+		/*if (IsKeyPressed(KEY_G)) {
 			pTexture = rema.pload<TextureResource> ("wabbit_alpha.png");
-		}
+		}*/
 		if (IsKeyPressed(KEY_H)) {
-			rema.clearAll();
+			//rema.clearAll();
 		}
 		
 	}

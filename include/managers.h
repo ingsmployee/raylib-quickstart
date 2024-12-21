@@ -5,95 +5,10 @@
 #include "raylib.h"
 #include <map>
 #include <memory>
+#include <typeinfo>
 
-#include "resource_base.h"
-
-
-
-
-
-
-class ResourceManager {
-private:
-    //this is designed to be instantiated per-level, maybe idk
-    std::map<const char*, std::shared_ptr<Resource>> resources;
-
-public:
-    const char* findResource(std::shared_ptr<Resource>& item) {
-        for(const auto &m : resources) {
-            if (m.first == (*item.get()).id) {
-                return m.first;
-            }
-        }
-        return "";
-    }
-    void removeResource(std::shared_ptr<Resource> res) {
-        const char* id = findResource(res);
-        if (id != "") {
-            resources.erase(id);
-        }
-        else {
-            clog(D_RESOURCE, "Could not find resource in ResourceManager. Are you checking the right one?"); //this is asswater
-        }
-    }
-
-    void clearAll() { //probably unoptimized
-        resources.clear();
-    }
-
-    template <class T, class...Y>
-    std::shared_ptr<T> getResource(const char* id, Y...args) {
-        if (resources.count((char*)id) == 0) {
-            // if there's nothing with that id, make a new one...
-            std::shared_ptr<T> item (new T(id, args...));
-
-            return(item);
-        }
-        else {
-            //if there's something with that id, just return that...
-            return(resources.at((char*)id));
-        }
-    }
-
-    //returns shared_ptr to a resource from the manager, if that resource isn't in the manager (by index) it instantiates a new one
-    //example usage:
-    //ImageResource* img = rema.pload<ImageResource> ("wabbit_alpha.png");
-    //
-    template<class T, class... Y>
-    std::shared_ptr<T> pload(const char* id, Y... args) {
-
-        if (resources.count((char*)id) == 0) {
-            // if there's nothing with that id, make a new one
-            std::shared_ptr<T> item (new T((char*)id, args...));
-            // tell it what its id is, just in case i need that later
-            item.get()->id = (char*)id;
-            // actually put it into the map
-            resources.insert(std::pair<char*, std::shared_ptr<Resource>>((char*)id, std::static_pointer_cast<Resource>(item)));
-            return(item);
-        }
-        else {
-            //if there's something with that id, just return that...
-            return(std::dynamic_pointer_cast<T>(resources.at((char*)id)));
-        }
-        
-        //should never get here lmfao lonely ass
-    }
-
-    //DEPRECATED
-    //can't just like. grab all of the std::shared_ptr<Resource>s and delete them, y'know? undef behavior n all
-    /*
-    void clearAll() {
-        for(std::shared_ptr<Resource> res : resources) {
-            //res->unload();
-            //delete res;
-        }
-        resources.clear();
-    }*/
-
-
-
-
-};
+#include "bases.h"
+#include "prototypes.h"
 
 
 
@@ -104,7 +19,11 @@ public:
 
 
 
-// OLD MEMORY MANAGER USING CRAPPY VOID* INSTEAD OF BASED RESOURCE*
+
+
+// an artifact
+
+/*
 class VoidPtrMemoryManager {
 // this class serves to abstract a lot of the loading and unloading methods,
 //      essentially working as a sort-of dictionary to keep track of resources at a local level,
@@ -255,4 +174,4 @@ public:
         }
     }
 
-};
+};*/
